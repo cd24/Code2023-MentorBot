@@ -1,17 +1,9 @@
 package frc.robot.subsystems;
 
-import frc.robot.Robot;
-import frc.robot.RobotContainer;
 import frc.robot.Util;
-import frc.robot.Constants.IntakeConstants;
-import frc.robot.Constants.VisionConstants;
 import frc.robot.Constants.WristConstants;
 import frc.robot.Constants.ArmConstants;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-import com.ctre.phoenix.sensors.AbsoluteSensorRange;
-import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxAbsoluteEncoder;
@@ -24,11 +16,8 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
-import edu.wpi.first.wpilibj2.command.Subsystem;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 public class Wrist extends ProfiledPIDSubsystem {
     
@@ -106,13 +95,6 @@ public class Wrist extends ProfiledPIDSubsystem {
         SmartDashboard.putNumber("WRIST: Current angle", wristEncoder.getPosition()*360.0/WristConstants.gearRatio);
         SmartDashboard.putNumber("WRIST: absolute angle", wristAbsolulteEncoder.getPosition()*36000.0/WristConstants.gearRatio);
         SmartDashboard.putNumber("WRIST: absolute position", wristAbsolulteEncoder.getPosition());
-        
-
-        if (RobotContainer.getOperatorLeftY() > 0.0) setWrist(0.1);
-        else if (RobotContainer.getOperatorLeftY() < 0.0) setWrist(-0.1);
-        else setWrist(0);
-        
-
     }
 
     @Override

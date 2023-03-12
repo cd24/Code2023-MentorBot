@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Autonomous.Auto;
-import frc.robot.subsystems.Arm;
+import frc.robot.Control.*;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -25,7 +25,7 @@ public class Robot extends TimedRobot {
 
   private RobotContainer robot;
   private PowerDistribution pdp = new PowerDistribution();
-
+  private Controllers controllers;
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -34,8 +34,13 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     robot = RobotContainer.getInstance();
+    controllers = new Controllers(
+      new DriverController(Constants.InputPorts.driverController, robot),
+      new OperatorController(Constants.InputPorts.operatorController, robot)
+    ).withBoundIO();
+    
     pdp.clearStickyFaults();
-    m_chooser.setDefaultOption("Default Auto (Move Arm)", RobotContainer.getAutonomousCommand(Auto.Selection.MOVEWRIST));
+    m_chooser.setDefaultOption("Default Auto (Move Arm)", robot.getAutonomousCommand(Auto.Selection.MOVEWRIST));
     SmartDashboard.putData("Auto choices", m_chooser);
   }
 
@@ -69,7 +74,7 @@ public class Robot extends TimedRobot {
     pdp.clearStickyFaults();
     CommandScheduler.getInstance().schedule(m_chooser.getSelected());
     System.out.println("Auto selected: " + m_autoSelected);
-    RobotContainer.getAutonomousCommand(Auto.Selection.MOVEWRIST);
+    robot.getAutonomousCommand(Auto.Selection.MOVEWRIST);
   }
 
   /** This function is called periodically during autonomous. */
@@ -93,8 +98,6 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    SmartDashboard.putNumber("LTval", RobotContainer.getOperatorLT());
-    SmartDashboard.putNumber("RTval", RobotContainer.getOperatorRT());
   }
 
   /** This function is called once when the robot is disabled. */

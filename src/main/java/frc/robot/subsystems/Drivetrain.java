@@ -9,38 +9,48 @@ import frc.robot.Util;
 import java.util.List;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
+import com.kauailabs.navx.frc.AHRS;
+
 import edu.wpi.first.wpilibj2.command.Subsystem;
-import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Drivetrain implements Subsystem {
     private static Drivetrain instance = null;
-    private static final TalonFX
+    private final TalonFX
         leftMaster = Util.createTalonFX(DrivetrainConstants.leftMaster),
         leftSlave = Util.createTalonFX(DrivetrainConstants.leftSlave),
         rightMaster = Util.createTalonFX(DrivetrainConstants.rightMaster),
         rightSlave = Util.createTalonFX(DrivetrainConstants.rightSlave);
     
-    public static final List<TalonFX> motors = List.of(leftMaster, leftSlave, rightMaster , rightSlave);
+    public final List<TalonFX> motors = List.of(leftMaster, leftSlave, rightMaster , rightSlave);
 
 
-    public static final DifferentialDriveKinematics KINEMATICS = new DifferentialDriveKinematics(DrivetrainConstants.kTrackWidth);
-    public static final SimpleMotorFeedforward FEEDFORWARD = new SimpleMotorFeedforward(DrivetrainConstants.kS, DrivetrainConstants.kV, DrivetrainConstants.kA);
-    public static final TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(DrivetrainConstants.kMaxSpeedMPS, DrivetrainConstants.kMaxAcceleration);
-    public static final ProfiledPIDController LEFT_PID_CONTROLLER = new ProfiledPIDController(DrivetrainConstants.kP, DrivetrainConstants.kI, DrivetrainConstants.kD, constraints);
-    public static final ProfiledPIDController RIGHT_PID_CONTROLLER = new ProfiledPIDController(DrivetrainConstants.kP, DrivetrainConstants.kI, DrivetrainConstants.kD, constraints);
-    public static DifferentialDriveOdometry ODOMETRY = new DifferentialDriveOdometry(Rotation2d.fromDegrees(RobotContainer.navX.getAngle()), getLeftEnc(), getRightEnc());
-    private Drivetrain() {
+    public final DifferentialDriveKinematics KINEMATICS;
+    public final SimpleMotorFeedforward FEEDFORWARD;
+    public final TrapezoidProfile.Constraints constraints;
+    public final ProfiledPIDController LEFT_PID_CONTROLLER;
+    public final ProfiledPIDController RIGHT_PID_CONTROLLER;
+    public DifferentialDriveOdometry ODOMETRY;
+    
+    public AHRS navX;
+
+    private Drivetrain(AHRS navX) {
+        this.navX = navX;
+        this.KINEMATICS = new DifferentialDriveKinematics(DrivetrainConstants.kTrackWidth);
+        this.FEEDFORWARD = new SimpleMotorFeedforward(DrivetrainConstants.kS, DrivetrainConstants.kV, DrivetrainConstants.kA);
+        this.constraints = new TrapezoidProfile.Constraints(DrivetrainConstants.kMaxSpeedMPS, DrivetrainConstants.kMaxAcceleration);
+        this.LEFT_PID_CONTROLLER = new ProfiledPIDController(DrivetrainConstants.kP, DrivetrainConstants.kI, DrivetrainConstants.kD, constraints);
+        this.RIGHT_PID_CONTROLLER = new ProfiledPIDController(DrivetrainConstants.kP, DrivetrainConstants.kI, DrivetrainConstants.kD, constraints);
+        this.ODOMETRY = new DifferentialDriveOdometry(Rotation2d.fromDegrees(navX.getAngle()), getLeftEnc(), getRightEnc());
+
         leftSlave.follow(leftMaster);
         rightSlave.follow(rightMaster);
         //leftSlave.setNeutralMode(NeutralMode.Coast);
@@ -54,31 +64,31 @@ public class Drivetrain implements Subsystem {
 
     @Override
     public void periodic() {
-        ODOMETRY.update(Rotation2d.fromDegrees(-RobotContainer.navX.getAngle()),
+        ODOMETRY.update(Rotation2d.fromDegrees(-navX.getAngle()),
         getLeftEncMeters(),
         getRightEncMeters());
         SmartDashboard.putNumber("Left Master output: ", getLeftEncVelocityMeters());
         //SmartDashboard.putNumber("Left Slave output: ", leftSlave.getMotorOutputPercent());
         SmartDashboard.putNumber("Right Master output: ", getRightEncVelocityMeters());
-        SmartDashboard.putNumber("NavX heading", RobotContainer.navX.getAngle());
+        SmartDashboard.putNumber("NavX heading", navX.getAngle());
         //SmartDashboard.putNumber("Right Slave output: ", rightSlave.getMotorOutputPercent());
         
     }
-    private static int kInverted = 1; //1 or -1
-    public static int getkInvert() { //only for teleop driving, up to user to read this flag
+    private int kInverted = 1; //1 or -1
+    public int getkInvert() { //only for teleop driving, up to user to read this flag
         return kInverted;
     }
 
-    public static void setOpenLoop(double left, double right) {
+    public void setOpenLoop(double left, double right) {
         leftMaster.set(ControlMode.PercentOutput, left);
         rightMaster.set(ControlMode.PercentOutput, right);
     }
 
-    public static void setVoltages(double leftv, double rightv) {
+    public void setVoltages(double leftv, double rightv) {
         setOpenLoop(leftv/Constants.kMaxVoltage, rightv/Constants.kMaxVoltage);
     }
 
-    public static void setInverted(boolean status) { //For defense, the back of the robot becomes the front
+    public void setInverted(boolean status) { //For defense, the back of the robot becomes the front
         if(status) {
             kInverted = -1;
         } else {
@@ -110,35 +120,35 @@ public class Drivetrain implements Subsystem {
     /**
      * @return the left and right drivetrain velocities (in meters/sec) as a DifferentialDriveWheelSpeeds object
      */
-    public static DifferentialDriveWheelSpeeds getWheelSpeeds() {
+    public DifferentialDriveWheelSpeeds getWheelSpeeds() {
         return new DifferentialDriveWheelSpeeds(getLeftEncVelocityMeters(), getRightEncVelocityMeters());
     }
     
     /**
      * @return the current position measurement of the left drivetrain encoder in talon native units (ticks)
      */
-    public static double getLeftEnc() {
+    public double getLeftEnc() {
         return leftMaster.getSelectedSensorPosition();
     }
     
     /**
      * @return the current position measurement of the right drivetrain encoder in talon native units (ticks/)
      */
-    public static double getRightEnc() {
+    public double getRightEnc() {
         return rightMaster.getSelectedSensorPosition();
     }
 
     /**
      * @return the current position measurement of the left drivetrain encoder in meters
      */
-    public static double getLeftEncMeters() {
+    public double getLeftEncMeters() {
         return Units.DrivetrainUnits.TicksToMeters(getLeftEnc());
     }
     
     /**
      * @return the current position measurement of the right drivetrain encoder in meters
      */
-    public static double getRightEncMeters() {
+    public double getRightEncMeters() {
         return Units.DrivetrainUnits.TicksToMeters(getRightEnc());
     }
 
@@ -147,33 +157,33 @@ public class Drivetrain implements Subsystem {
     /**
      * @return the current velocity measurement of the left drivetrain encoder in talon native units (ticks/ds)
      */
-    public static double getLeftEncVelocity() {
+    public double getLeftEncVelocity() {
         return leftMaster.getSelectedSensorVelocity();
     }
     
     /**
      * @return the current velocity measurement of the right drivetrain encoder in talon native units (ticks/ds)
      */
-    public static double getRightEncVelocity() {
+    public double getRightEncVelocity() {
         return rightMaster.getSelectedSensorVelocity();
     }
 
     /**
      * @return the current velocity measurement of the left drivetrain encoder in meters
      */
-    public static double getLeftEncVelocityMeters() {
+    public double getLeftEncVelocityMeters() {
         return Units.DrivetrainUnits.TicksPerDecisecondToMPS(getLeftEncVelocity());
     }
 
     /**
      * @return the current velocity measurement of the right drivetrain encoder in meters
      */
-    public static double getRightEncVelocityMeters() {
+    public double getRightEncVelocityMeters() {
         return Units.DrivetrainUnits.TicksPerDecisecondToMPS(getRightEncVelocity());
     }
     
     /* Static class to contain the speeds of each side of the drivetrain */
-    public static class WheelState {
+    public class WheelState {
         public double left, right;
         
         public WheelState(double left, double right) {
@@ -183,7 +193,9 @@ public class Drivetrain implements Subsystem {
     }
 
     public static Drivetrain getInstance() {
-        if(instance == null) instance = new Drivetrain();
+        if(instance == null) { 
+            instance = new Drivetrain(RobotContainer.getInstance().navX);
+        }
         return instance;
     }
 }

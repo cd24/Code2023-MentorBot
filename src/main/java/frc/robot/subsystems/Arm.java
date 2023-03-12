@@ -127,10 +127,6 @@ public class Arm extends ProfiledPIDSubsystem {
         //SmartDashboard.putNumber("encoder value", relArmEncoder.getPosition()*360.0/100.0); //johnny and charles r dumb
         SmartDashboard.putNumber("Arm encoder value", relArmEncoder.getPosition());
         SmartDashboard.putNumber("Arm measurement", getMeasurement());
-        if (RobotContainer.getOperatorRightY() > 0.0) setOpenLoop(0.1);
-        else if (RobotContainer.getOperatorRightY() < 0.0) setOpenLoop(-0.1);
-        else stopArm();
-        
     }
     
     /**
