@@ -18,16 +18,16 @@ public class OperatorController extends Controller {
     @Override 
     public void configure() {
         // Cube Intake Positions
-        this.buttons.y
+        this.buttons.Y
             .onTrue(new RunCommand(() -> robot.arm.setArmPosition(ArmConstants.kCubeHighScorePosition), robot.arm))
             .whileTrue(new RunCommand(() -> robot.wrist.setWristPosition(WristConstants.kCubeHighScorePosition), robot.wrist));
-        this.buttons.a
+        this.buttons.A
             .onTrue(new RunCommand(() -> robot.arm.setArmPosition(ArmConstants.kCubeFloorIntakePosition), robot.arm))
             .onTrue(new RunCommand(() -> robot.wrist.setWristPosition(WristConstants.kCubeFloorIntakePosition), robot.wrist));
-        this.buttons.x
+        this.buttons.X
             .onTrue(new RunCommand(() -> robot.arm.setArmPosition(ArmConstants.kCubeMidScorePosition), robot.arm))
             .onTrue(new RunCommand(() -> robot.wrist.setWristPosition(WristConstants.kCubeMidScorePosition), robot.wrist));
-        this.buttons.b
+        this.buttons.B
             .onTrue(new RunCommand(() -> robot.arm.setArmPosition(ArmConstants.kStow), robot.arm))
             .onTrue(new RunCommand(() -> robot.wrist.setWristPosition(WristConstants.kStow), robot.wrist));
 
@@ -47,10 +47,10 @@ public class OperatorController extends Controller {
             .onTrue (new RunCommand(() -> robot.wrist.setWristPosition(WristConstants.kConeFloorUprightIntakePosition), robot.wrist));
 
         // Cube Intake/Outtake Action
-        this.buttons.rb
+        this.buttons.rightBumper
             .onTrue(new RunCommand(() -> robot.intake.set(.75), robot.wrist))
             .onFalse(new RunCommand(() -> robot.intake.set(0), robot.wrist));
-        this.buttons.lb
+        this.buttons.leftBumper
             .onTrue(new RunCommand(() -> robot.intake.set(-.75), robot.wrist))
             .onFalse(new RunCommand(() -> robot.intake.set(0), robot.wrist));
     }

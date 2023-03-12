@@ -19,12 +19,12 @@ public class DriverController extends Controller {
 
     @Override
     public void configure() {
-        this.buttons.a
+        this.buttons.A
             .whileTrue(new RepeatCommand(new RunCommand(() -> this.robot.wrist.setWrist(0.1), this.robot.wrist)))
             .onFalse(new RunCommand(() -> robot.wrist.stopWrist(), robot.wrist));
-        this.buttons.b 
+        this.buttons.B 
             .onTrue(new RunCommand(() -> robot.wrist.setWristPosition(0), robot.wrist));
-        this.buttons.x
+        this.buttons.X
             .onTrue(new RunCommand(() -> robot.wrist.setWristPosition(2.8), robot.wrist));
     }
 
