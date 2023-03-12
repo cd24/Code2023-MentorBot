@@ -1,9 +1,5 @@
 package frc.robot;
 
-import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
-import edu.wpi.first.wpilibj.I2C.Port;
-import frc.robot.Units;
-
 /*  Robot Specs:
     4 TalonFX motors
     4-6 NEO motors
@@ -73,7 +69,7 @@ public class Constants {
     }
 
     public static class WristConstants {
-        public static final int intakeMotor = 4;
+        public static final int intakeMotorCAN = 4;
         public static final int wristMotor = 10;
         public static final double gearRatio = 100.0;
         public static double autoDisplacementRads;
@@ -109,10 +105,10 @@ public class Constants {
     public static class DrivetrainConstants {
         public static final int
         /* Drivetrain motor IDs */ 
-            leftMaster = 3, // TalonFX right Masters & Slaves currently reversed
-            leftSlave = 1, // TalonFX
-            rightMaster = 4, // TalonFX
-            rightSlave = 2; // TalonFX
+            leftLeaderCAN = 3, // TalonFX right Masters & Slaves currently reversed
+            leftFollowerCAN = 1, // TalonFX
+            rightLeaderCAN = 4, // TalonFX
+            rightFollowerCAN = 2; // TalonFX
         
         /* feedforward constants */
         public static final double kS = 0.66589; // voltage required to overcome friction (V)

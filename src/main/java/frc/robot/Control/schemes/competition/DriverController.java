@@ -1,10 +1,11 @@
-package frc.robot.Control;
+package frc.robot.control.schemes.competition;
 
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 
 import frc.robot.RobotContainer;
 import frc.robot.Constants.DriverConstants;
+import frc.robot.control.Controller;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /// This is a top-level behavior object responsible for binding the
@@ -29,6 +30,7 @@ public class DriverController extends Controller {
 
     @Override
     public void periodic() {
+        super.periodic();
 
         // Drivetrain control
         double throttle = -deadband(controller.getLeftY(), DriverConstants.kJoystickDeadband);
@@ -38,7 +40,7 @@ public class DriverController extends Controller {
             turn *= robot.drivetrain.getkInvert();
             throttle *= robot.drivetrain.getkInvert();
         }
-        
+
         SmartDashboard.putNumber("turn input", turn);
         SmartDashboard.putNumber("throttle input", throttle);
 

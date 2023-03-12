@@ -3,7 +3,6 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxAbsoluteEncoder;
 
-import com.revrobotics.SparkMaxLimitSwitch;
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
@@ -14,31 +13,21 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.Constants.ArmConstants;
-import frc.robot.Constants.WristConstants;
-import frc.robot.RobotContainer;
 import frc.robot.Util;                                     
 import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 
 
 public class Arm extends ProfiledPIDSubsystem {
-    private static final CANSparkMax motorR = Util.createSparkMAX(3, MotorType.kBrushless);
-    private static final CANSparkMax motorL = Util.createSparkMAX(1, MotorType.kBrushless);
-    private SparkMaxAbsoluteEncoder armEncoder = motorR.getAbsoluteEncoder(Type.kDutyCycle);
-    private RelativeEncoder relArmEncoder = motorR.getEncoder();
+    private final CANSparkMax motorR;
+    private final CANSparkMax motorL;
+    private SparkMaxAbsoluteEncoder armEncoder;
+    private RelativeEncoder relArmEncoder;
     //private static final Encoder armEncoder = new Encoder(4,3);
 
     private SparkMaxPIDController pidController;
     
-    private static final ArmFeedforward FEEDFORWARD = new ArmFeedforward(ArmConstants.kS, ArmConstants.kCos, ArmConstants.kV, ArmConstants.kA);
-    
-    private static Arm instance;
-    public static Arm getInstance() {
-        if(instance == null) instance = new Arm();
-        return instance;
-
-    }
+    private final ArmFeedforward FEEDFORWARD = new ArmFeedforward(ArmConstants.kS, ArmConstants.kCos, ArmConstants.kV, ArmConstants.kA);
     
     /**
      * Enum class representing the two possible positions of the intake arm, UP and DOWN
@@ -56,7 +45,7 @@ public class Arm extends ProfiledPIDSubsystem {
     //     }
     // }
     
-    private Arm() {
+    public Arm(int rightMotorCAN, int leftMotorCAN) {
         super(
             new ProfiledPIDController(
                 ArmConstants.kP, 
@@ -66,7 +55,12 @@ public class Arm extends ProfiledPIDSubsystem {
             ),
             0
         );
-       
+
+        this.motorR = Util.createSparkMAX(rightMotorCAN, MotorType.kBrushless);
+        this.motorL = Util.createSparkMAX(leftMotorCAN, MotorType.kBrushless);
+        this.armEncoder = this.motorR.getAbsoluteEncoder(Type.kDutyCycle);
+        this.relArmEncoder = this.motorR.getEncoder();
+
         /*
         motor.configContinuousCurrentLimit(1);
         motor.configPeakCurrentLimit(0);

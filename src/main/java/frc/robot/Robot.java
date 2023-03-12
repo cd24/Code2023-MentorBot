@@ -8,10 +8,16 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+
+import com.kauailabs.navx.frc.AHRS;
+
 import frc.robot.Autonomous.Auto;
-import frc.robot.Control.*;
+import frc.robot.Constants.*;
+import frc.robot.control.schemes.competition.*;
+import frc.robot.subsystems.*;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -33,10 +39,28 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    robot = RobotContainer.getInstance();
+    // Configure the shared instance of our subsystems
+    robot = new RobotContainer(
+        new Drivetrain(new AHRS(Port.kMXP)),
+        new Intake(WristConstants.intakeMotorCAN),
+        new Wrist(WristConstants.wristMotor),
+        new Arm(3, 1)
+    );
+    robot.engage();
     controllers = new Controllers(
       new DriverController(Constants.InputPorts.driverController, robot),
       new OperatorController(Constants.InputPorts.operatorController, robot)
+      // Replace the line above to swap out the control scheme with a testing controller scheme defined
+      // in the `IntakeIsolatedController.java` class!
+      // new IntakeIsolatedController(Constants.InputPorts.operatorController, robot);
+      //
+      // (Also import it above) by replacing:
+      // 
+      // import frc.robot.control.schemes.competition.*;
+      //
+      // with the new import
+      //
+      // import frc.robot.control.schemes.competition.*;
     ).withBoundIO();
     
     pdp.clearStickyFaults();
@@ -54,6 +78,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
+    controllers.reportToSmartDashboard();
     SmartDashboard.putNumber("Port 21 Current", pdp.getCurrent(21));
   }
 

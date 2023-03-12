@@ -22,21 +22,14 @@ import edu.wpi.first.wpilibj2.command.ProfiledPIDSubsystem;
 public class Wrist extends ProfiledPIDSubsystem {
     
     //private static CANSparkMax conveyorMotor;
-    private static final CANSparkMax wristMotor = Util.createSparkMAX(WristConstants.wristMotor, MotorType.kBrushless);
-    private static final RelativeEncoder wristEncoder = wristMotor.getEncoder();
-    private static final ArmFeedforward FEEDFORWARD = new ArmFeedforward(ArmConstants.kS, ArmConstants.kCos, ArmConstants.kV, ArmConstants.kA);
+    private final CANSparkMax wristMotor;
+    private final RelativeEncoder wristEncoder;
+    private final ArmFeedforward FEEDFORWARD;
     private SparkMaxPIDController pidController;
     // private RelativeEncoder relWristEncoder = wristMotor.getEncoder();
-    private static final SparkMaxAbsoluteEncoder wristAbsolulteEncoder = wristMotor.getAbsoluteEncoder(Type.kDutyCycle);
+    private final SparkMaxAbsoluteEncoder wristAbsolulteEncoder;
 
-    private static Wrist instance;
-    public static Wrist getInstance(){
-        if (instance == null) instance = new Wrist();
-        return instance;
-    }
-
-    private Wrist(){
-
+    public Wrist(int wristMotorCAN) {
         super(
             new ProfiledPIDController(
                 WristConstants.kP, 
@@ -46,11 +39,20 @@ public class Wrist extends ProfiledPIDSubsystem {
             ),
             0
         );
+        this.wristMotor = Util.createSparkMAX(wristMotorCAN, MotorType.kBrushless);
+        this.wristMotor.setInverted(false);
+        this.wristAbsolulteEncoder = wristMotor.getAbsoluteEncoder(Type.kDutyCycle);
+        this.wristEncoder = wristMotor.getEncoder();
+        this.wristEncoder.setPosition(0);
+        this.FEEDFORWARD = new ArmFeedforward(
+            ArmConstants.kS, 
+            ArmConstants.kCos, 
+            ArmConstants.kV, 
+            ArmConstants.kA
+        );
+
         WristConstants.initialWristAngle = wristAbsolulteEncoder.getPosition();
-        // intakeMotor.setInverted(true);
-        wristMotor.setInverted(false);
-        //wristEncoder.setPositionConversionFactor(2*Math.PI/WristConstants.gearRatio);
-        wristEncoder.setPosition(0);
+
         pidController = wristMotor.getPIDController();
         pidController.setP(WristConstants.kP);
         pidController.setI(WristConstants.kI);
@@ -59,11 +61,6 @@ public class Wrist extends ProfiledPIDSubsystem {
         pidController.setFF(0);
         pidController.setOutputRange(-0.3, 0.3);
         
-        //conveyorMotor = Util.createSparkMAX(ConveyorConstants.motor, MotorType.kBrushless);
-        // conveyorMotor.setInverted(true);
-        // conveyorMotor.burnFlash();
-        /*conveyorMotor.setInverted(false);
-        conveyorMotor.burnFlash();*/
         register();
     }
 

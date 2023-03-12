@@ -3,7 +3,6 @@ package frc.robot;
 import frc.robot.Autonomous.Auto;
 import frc.robot.Constants.*;
 import frc.robot.subsystems.*;
-import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
@@ -11,7 +10,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import com.kauailabs.navx.frc.AHRS;
 
 public class RobotContainer {
-    private static RobotContainer instance = null;
 
     // Motion
     public Drivetrain drivetrain;
@@ -26,7 +24,7 @@ public class RobotContainer {
     // Style
     public LEDStrip ledStrip;
 
-    private RobotContainer(
+    public RobotContainer(
         Drivetrain drivetrain,
         Intake intake,
         Wrist wrist,
@@ -36,7 +34,6 @@ public class RobotContainer {
         this.intake = intake;
         this.wrist = wrist;
         this.arm = arm;
-        this.navX = new AHRS(Port.kMXP);
         this.limelight = new Limelight("limelight-intake");
         this.ledStrip = new LEDStrip(0);
     }
@@ -72,18 +69,5 @@ public class RobotContainer {
                 break;
         }
         return auto;
-    }
-
-    public static RobotContainer getInstance() {
-        if(instance == null) {
-            instance = new RobotContainer(
-                Drivetrain.getInstance(),
-                Intake.getInstance(),
-                Wrist.getInstance(),
-                Arm.getInstance()
-            );
-            instance.engage();
-        }
-        return instance;
     }
 }

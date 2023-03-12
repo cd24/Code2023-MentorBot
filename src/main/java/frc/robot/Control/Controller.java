@@ -1,4 +1,4 @@
-package frc.robot.Control;
+package frc.robot.control;
 
 import frc.robot.RobotContainer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -75,7 +75,6 @@ public class Controller
     // MARK: - Provide a periodic binding
 
     public void periodic() {
-        this.reportToSmartDashboard();
     }
 
     // MARK: - Reporting to Smart Dashboard

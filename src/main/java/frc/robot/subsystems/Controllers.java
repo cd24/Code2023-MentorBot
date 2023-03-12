@@ -1,6 +1,7 @@
-package frc.robot.Control;
+package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import frc.robot.control.Controller;
 
 /// Provides a top-level object to contain the controllers available to
 /// the system. In a typical match, this will entail one driver and one
@@ -20,8 +21,8 @@ public class Controllers implements Subsystem
 
     public Controllers withBoundIO() 
     {
-        this.driverController.configure();
-        this.operatorController.configure();
+        driverController.configure();
+        operatorController.configure();
         return this;
     }
 
@@ -31,8 +32,13 @@ public class Controllers implements Subsystem
     public void periodic() 
     {
         // Driver actions come first...
-        this.driverController.periodic();
+        driverController.periodic();
         // Then we evaluate the operator controls
-        this.operatorController.periodic();
+        operatorController.periodic();
+    }
+
+    public void reportToSmartDashboard() {
+        driverController.reportToSmartDashboard();
+        operatorController.reportToSmartDashboard();
     }
 }

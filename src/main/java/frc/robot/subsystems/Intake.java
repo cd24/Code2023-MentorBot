@@ -6,19 +6,13 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Subsystem;
-import frc.robot.Constants.WristConstants;
 
 public class Intake implements Subsystem {
 
-    private final CANSparkMax intakeMotor = Util.createSparkMAX(WristConstants.intakeMotor, MotorType.kBrushless);
+    private final CANSparkMax intakeMotor;
 
-    private static Intake instance;
-    public static Intake getInstance(){
-        if (instance == null) instance = new Intake();
-        return instance;
-    }
-
-    public Intake(){
+    public Intake(int intakeCAN){
+        this.intakeMotor = Util.createSparkMAX(intakeCAN, MotorType.kBrushless);
         register();
     }
 

@@ -1,9 +1,10 @@
-package frc.robot.Control;
+package frc.robot.control.schemes.competition;
 
 import edu.wpi.first.wpilibj2.command.RunCommand;
 
 import frc.robot.RobotContainer;
 import frc.robot.Constants.*;
+import frc.robot.control.Controller;
 
 /// This is a top-level behavior object responsible for binding the
 /// initialized controller to robot behavior. This object controls

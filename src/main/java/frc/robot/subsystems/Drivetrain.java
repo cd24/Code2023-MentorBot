@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.Constants;
-import frc.robot.RobotContainer;
 import frc.robot.Units;
 import frc.robot.Util;
 
@@ -23,15 +22,9 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Drivetrain implements Subsystem {
-    private static Drivetrain instance = null;
-    private final TalonFX
-        leftMaster = Util.createTalonFX(DrivetrainConstants.leftMaster),
-        leftSlave = Util.createTalonFX(DrivetrainConstants.leftSlave),
-        rightMaster = Util.createTalonFX(DrivetrainConstants.rightMaster),
-        rightSlave = Util.createTalonFX(DrivetrainConstants.rightSlave);
+    private final TalonFX leftLeader, leftFollower, rightLeader, rightFollower;
     
-    public final List<TalonFX> motors = List.of(leftMaster, leftSlave, rightMaster , rightSlave);
-
+    public final List<TalonFX> motors;
 
     public final DifferentialDriveKinematics KINEMATICS;
     public final SimpleMotorFeedforward FEEDFORWARD;
@@ -42,8 +35,14 @@ public class Drivetrain implements Subsystem {
     
     public AHRS navX;
 
-    private Drivetrain(AHRS navX) {
+    public Drivetrain(AHRS navX) {
         this.navX = navX;
+        this.leftLeader = Util.createTalonFX(DrivetrainConstants.leftLeaderCAN);
+        this.leftFollower = Util.createTalonFX(DrivetrainConstants.leftFollowerCAN);
+        this.rightLeader = Util.createTalonFX(DrivetrainConstants.rightLeaderCAN);
+        this.rightFollower = Util.createTalonFX(DrivetrainConstants.rightFollowerCAN);
+        this.motors = List.of(leftLeader, leftFollower, rightLeader, rightFollower);
+
         this.KINEMATICS = new DifferentialDriveKinematics(DrivetrainConstants.kTrackWidth);
         this.FEEDFORWARD = new SimpleMotorFeedforward(DrivetrainConstants.kS, DrivetrainConstants.kV, DrivetrainConstants.kA);
         this.constraints = new TrapezoidProfile.Constraints(DrivetrainConstants.kMaxSpeedMPS, DrivetrainConstants.kMaxAcceleration);
@@ -51,13 +50,13 @@ public class Drivetrain implements Subsystem {
         this.RIGHT_PID_CONTROLLER = new ProfiledPIDController(DrivetrainConstants.kP, DrivetrainConstants.kI, DrivetrainConstants.kD, constraints);
         this.ODOMETRY = new DifferentialDriveOdometry(Rotation2d.fromDegrees(navX.getAngle()), getLeftEnc(), getRightEnc());
 
-        leftSlave.follow(leftMaster);
-        rightSlave.follow(rightMaster);
+        leftFollower.follow(leftLeader);
+        rightFollower.follow(rightLeader);
         //leftSlave.setNeutralMode(NeutralMode.Coast);
         //rightSlave.setNeutralMode(NeutralMode.Coast);
         // Inverting opposite sides of the drivetrain
-        List.of(leftMaster , leftSlave).forEach(motor -> motor.setInverted(false));
-        List.of(rightMaster , rightSlave).forEach(motor -> motor.setInverted(true));
+        List.of(leftLeader , leftFollower).forEach(motor -> motor.setInverted(false));
+        List.of(rightLeader , rightFollower).forEach(motor -> motor.setInverted(true));
 
         register();
     }
@@ -80,8 +79,8 @@ public class Drivetrain implements Subsystem {
     }
 
     public void setOpenLoop(double left, double right) {
-        leftMaster.set(ControlMode.PercentOutput, left);
-        rightMaster.set(ControlMode.PercentOutput, right);
+        leftLeader.set(ControlMode.PercentOutput, left);
+        rightLeader.set(ControlMode.PercentOutput, right);
     }
 
     public void setVoltages(double leftv, double rightv) {
@@ -113,8 +112,8 @@ public class Drivetrain implements Subsystem {
      * @param right right wheel value
      */
     public void resetEncoders(int left, int right) {
-        rightMaster.setSelectedSensorPosition(right);
-        leftMaster.setSelectedSensorPosition(left);
+        rightLeader.setSelectedSensorPosition(right);
+        leftLeader.setSelectedSensorPosition(left);
     }
 
     /**
@@ -128,14 +127,14 @@ public class Drivetrain implements Subsystem {
      * @return the current position measurement of the left drivetrain encoder in talon native units (ticks)
      */
     public double getLeftEnc() {
-        return leftMaster.getSelectedSensorPosition();
+        return leftLeader.getSelectedSensorPosition();
     }
     
     /**
      * @return the current position measurement of the right drivetrain encoder in talon native units (ticks/)
      */
     public double getRightEnc() {
-        return rightMaster.getSelectedSensorPosition();
+        return rightLeader.getSelectedSensorPosition();
     }
 
     /**
@@ -158,14 +157,14 @@ public class Drivetrain implements Subsystem {
      * @return the current velocity measurement of the left drivetrain encoder in talon native units (ticks/ds)
      */
     public double getLeftEncVelocity() {
-        return leftMaster.getSelectedSensorVelocity();
+        return leftLeader.getSelectedSensorVelocity();
     }
     
     /**
      * @return the current velocity measurement of the right drivetrain encoder in talon native units (ticks/ds)
      */
     public double getRightEncVelocity() {
-        return rightMaster.getSelectedSensorVelocity();
+        return rightLeader.getSelectedSensorVelocity();
     }
 
     /**
@@ -190,12 +189,5 @@ public class Drivetrain implements Subsystem {
             this.left = left;
             this.right = right;
         }
-    }
-
-    public static Drivetrain getInstance() {
-        if(instance == null) { 
-            instance = new Drivetrain(RobotContainer.getInstance().navX);
-        }
-        return instance;
     }
 }
