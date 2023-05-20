@@ -6,12 +6,19 @@ import com.ctre.phoenix.motorcontrol.StatorCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.TalonFXConfiguration;
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.ColorSensorV3;
 import edu.wpi.first.wpilibj.I2C.Port;
 
 public class Util {
+
+    private static int talonSRXDefaultContinuousLimit = 38;
+    private static int talonSRXDefaultPeakLimit = 45;
+    private static int talonSRXDefaultPeakDuration = 125;
 
     public static final boolean talonFXStatorLimitEnable = false;
     public static final double talonFXStatorCurrentLimit = 100;
@@ -24,7 +31,10 @@ public class Util {
     public static final double talonFXSupplyTriggerDuration = 0.7;
 
     private static int sparkMAXDefaultCurrentLimit = 40;
+
+    private static double voltageCompensation = Constants.kMaxVoltage;
     
+
     /**
      * Create a CANSparkMax with current limiting enabled
      * 

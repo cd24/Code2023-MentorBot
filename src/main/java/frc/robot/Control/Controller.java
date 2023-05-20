@@ -37,6 +37,8 @@ public class Controller
     /// buttons together
     public DPAD dpad;
 
+    public Object leftBumper;
+
     public Controller(int controllerPort, RobotContainer robot) 
     {
         XboxController controller = new XboxController(controllerPort);

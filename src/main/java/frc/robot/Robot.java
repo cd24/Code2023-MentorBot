@@ -6,17 +6,23 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 
 import com.kauailabs.navx.frc.AHRS;
 
 import frc.robot.Autonomous.Auto;
 import frc.robot.Constants.*;
 import frc.robot.control.schemes.competition.*;
+import frc.robot.control.schemes.testing.*;
 import frc.robot.subsystems.*;
 
 /**
@@ -26,7 +32,6 @@ import frc.robot.subsystems.*;
  * project.
  */
 public class Robot extends TimedRobot {
-  private Command m_autoSelected;
   private final SendableChooser<Command> m_chooser = new SendableChooser<>();
 
   private RobotContainer robot;
@@ -40,14 +45,16 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     // Configure the shared instance of our subsystems
+    Intake intake = new Intake(WristConstants.intakeMotorCAN);
     robot = new RobotContainer(
         new Drivetrain(new AHRS(Port.kMXP)),
-        new Intake(WristConstants.intakeMotorCAN),
-        new Wrist(WristConstants.wristMotor),
-        new Arm(3, 1)
+        intake,
+        new Wrist(WristConstants.wristMotor, intake),
+        new Arm(3, 1, intake)
     );
     robot.engage();
     controllers = new Controllers(
+      new DriveTajectoryControl("output/autoStep1.wpilib.json", robot.drivetrain),
       new DriverController(Constants.InputPorts.driverController, robot),
       new OperatorController(Constants.InputPorts.operatorController, robot)
       // Replace the line above to swap out the control scheme with a testing controller scheme defined
@@ -60,7 +67,7 @@ public class Robot extends TimedRobot {
       //
       // with the new import
       //
-      // import frc.robot.control.schemes.competition.*;
+      // import frc.robot.control.schemes.testing.*;
     ).withBoundIO();
     
     pdp.clearStickyFaults();
@@ -94,26 +101,22 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    m_autoSelected = m_chooser.getSelected();
-    // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     pdp.clearStickyFaults();
-    CommandScheduler.getInstance().schedule(m_chooser.getSelected());
-    System.out.println("Auto selected: " + m_autoSelected);
-    robot.getAutonomousCommand(Auto.Selection.MOVEWRIST);
+    CommandScheduler.getInstance().schedule(
+      new SequentialCommandGroup(
+        new InstantCommand(() -> robot.wrist.setWristPositionAuto(Intake.ScorePos.STOW), robot.wrist),
+        new InstantCommand(() -> robot.arm.setArmPositionAuto(Intake.ScorePos.STOW), robot.arm),
+        new RunCommand(() -> robot.intake.set(-0.9), robot.intake).withTimeout(1),
+        new WaitCommand(.5),
+        new RunCommand(() -> robot.drivetrain.setOpenLoop(-0.25, -0.25), robot.drivetrain).withTimeout(2.2),
+        new RunCommand(() -> robot.intake.set(0)).withTimeout(1)
+      )
+    );
   }
 
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
-    // switch (m_autoSelected) {
-    //   case kCustomAuto:
-    //     // Put custom auto code here
-    //     break;
-    //   case kDefaultAuto:
-    //   default:
-    //     // Put default auto code here
-    //     break;
-    // }
   }
 
   /** This function is called once when teleop is enabled. */
@@ -123,6 +126,9 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
+    XboxController operatorController = controllers.controllers[1].controller;
+    SmartDashboard.putNumber("LTval", operatorController.getLeftTriggerAxis());
+    SmartDashboard.putNumber("RTval", operatorController.getRightTriggerAxis());
   }
 
   /** This function is called once when the robot is disabled. */

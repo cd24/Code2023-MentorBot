@@ -6,7 +6,6 @@ import frc.robot.subsystems.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
-
 import com.kauailabs.navx.frc.AHRS;
 
 public class RobotContainer {
@@ -40,11 +39,11 @@ public class RobotContainer {
 
     public void engage() {
         limelight.setLEDMode(Limelight.LEDMode.ON);
-
         drivetrain.resetEncoders();
     }
 
-    public Command getAutonomousCommand(Auto.Selection selectedAuto) { //TODO: change auto based on selected strategy
+    public Command getAutonomousCommand(Auto.Selection selectedAuto) { 
+        //TODO: change auto based on selected strategy
         Command auto = null;
         switch (selectedAuto) {
             case MOVEARM:

@@ -25,11 +25,13 @@ public class Wrist extends ProfiledPIDSubsystem {
     private final CANSparkMax wristMotor;
     private final RelativeEncoder wristEncoder;
     private final ArmFeedforward FEEDFORWARD;
+
     private SparkMaxPIDController pidController;
-    // private RelativeEncoder relWristEncoder = wristMotor.getEncoder();
+    private Intake intake;
+
     private final SparkMaxAbsoluteEncoder wristAbsolulteEncoder;
 
-    public Wrist(int wristMotorCAN) {
+    public Wrist(int wristMotorCAN, Intake intake) {
         super(
             new ProfiledPIDController(
                 WristConstants.kP, 
@@ -39,11 +41,15 @@ public class Wrist extends ProfiledPIDSubsystem {
             ),
             0
         );
+        this.intake = intake; 
+
         this.wristMotor = Util.createSparkMAX(wristMotorCAN, MotorType.kBrushless);
         this.wristMotor.setInverted(false);
+
         this.wristAbsolulteEncoder = wristMotor.getAbsoluteEncoder(Type.kDutyCycle);
         this.wristEncoder = wristMotor.getEncoder();
         this.wristEncoder.setPosition(0);
+        
         this.FEEDFORWARD = new ArmFeedforward(
             ArmConstants.kS, 
             ArmConstants.kCos, 
@@ -96,28 +102,44 @@ public class Wrist extends ProfiledPIDSubsystem {
 
     @Override
     protected void useOutput(double output, State setpoint) {
-        // TODO Auto-generated method stub
         double feedforward = FEEDFORWARD.calculate(setpoint.position, setpoint.velocity);
         wristMotor.setVoltage(output + feedforward);
-        
     }
 
     @Override
     protected double getMeasurement() {
-        // TODO Auto-generated method stub
         return wristEncoder.getPosition();
     }
     
-    // public boolean getIntakeSensor() {
-    //     if(!Robot.useV3()) {
-    //         return !intakePhotoelectric.get();
-    //     } else {
-    //         return false; //(RobotContainer.colorSensorV3.getProximity() >= ConveyorConstants.minimumProximity);
-    //     }
-    // }
+    public void setWristPositionAuto(Intake.ScorePos position) {
+        double encoderVal = 0.;
+        int climit = 5;
+        switch (position) {
+            case HIGH:
+                wristMotor.setSmartCurrentLimit(climit);
+                encoderVal = (intake.cone) ? WristConstants.kConeHighScorePosition : WristConstants.kCubeHighScorePosition;
+                break;
+            case MID:
+                wristMotor.setSmartCurrentLimit(climit);
+                encoderVal = (intake.cone) ? WristConstants.kConeMidScorePosition : WristConstants.kCubeMidScorePosition;
+                break;
+            case LOW:
+                wristMotor.setSmartCurrentLimit(climit);
+                encoderVal = (intake.cone) ? WristConstants.kConeFloorIntakePosition : WristConstants.kCubeFloorIntakePosition;
+                break;
+            case STOW:
+                wristMotor.setSmartCurrentLimit(20);
+                encoderVal = WristConstants.kStow + 0.35;
+                break;
+            default:
+                break;
+        }
+        pidController.setReference(encoderVal /*- WristConstants.initialWristAngle*/, ControlType.kPosition);
+        SmartDashboard.putNumber("Wrist SetPoint", encoderVal);
+    }
 
     public void setWristPosition(double position) {
-        pidController.setReference(position - WristConstants.initialWristAngle, ControlType.kPosition);
+        pidController.setReference(position /*- WristConstants.initialWristAngle*/, ControlType.kPosition);
         SmartDashboard.putNumber("SetWristPoint", position);
     }
 }

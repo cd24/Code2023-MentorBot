@@ -26,6 +26,7 @@ public class Arm extends ProfiledPIDSubsystem {
     //private static final Encoder armEncoder = new Encoder(4,3);
 
     private SparkMaxPIDController pidController;
+    private Intake intake;
     
     private final ArmFeedforward FEEDFORWARD = new ArmFeedforward(ArmConstants.kS, ArmConstants.kCos, ArmConstants.kV, ArmConstants.kA);
     
@@ -45,7 +46,7 @@ public class Arm extends ProfiledPIDSubsystem {
     //     }
     // }
     
-    public Arm(int rightMotorCAN, int leftMotorCAN) {
+    public Arm(int rightMotorCAN, int leftMotorCAN, Intake intake) {
         super(
             new ProfiledPIDController(
                 ArmConstants.kP, 
@@ -55,6 +56,7 @@ public class Arm extends ProfiledPIDSubsystem {
             ),
             0
         );
+        this.intake = intake;
 
         this.motorR = Util.createSparkMAX(rightMotorCAN, MotorType.kBrushless);
         this.motorL = Util.createSparkMAX(leftMotorCAN, MotorType.kBrushless);
@@ -87,7 +89,7 @@ public class Arm extends ProfiledPIDSubsystem {
         pidController.setD(ArmConstants.kD);
         pidController.setIZone(0);
         pidController.setFF(0);
-        pidController.setOutputRange(-0.3, 0.3);
+        pidController.setOutputRange(-0.75, 0.75);
         register();
     }
 
@@ -131,6 +133,10 @@ public class Arm extends ProfiledPIDSubsystem {
         //return armEncoder.getPosition();
         return 0;
     }
+
+    public double getPosition() { //added for limelight vision stuff
+        return relArmEncoder.getPosition(); //TODO: check if this returns degrees and if its accurate
+    }
     
     /**
      * Uses the value calculated by ProfiledPIDSubsystem
@@ -153,6 +159,27 @@ public class Arm extends ProfiledPIDSubsystem {
 
     }
 
+    public void setArmPositionAuto(Intake.ScorePos position) {
+        double encoderVal = 0.;
+        switch (position) {
+            case HIGH:
+                encoderVal = (intake.cone) ? ArmConstants.kConeHighScorePosition : ArmConstants.kCubeHighScorePosition;
+                break;
+            case MID:
+                encoderVal = (intake.cone) ? ArmConstants.kConeMidScorePosition : ArmConstants.kCubeMidScorePosition;
+                break;
+            case LOW:
+                encoderVal = (intake.cone) ? ArmConstants.kConeFloorUprightIntakePosition : ArmConstants.kCubeFloorIntakePosition;
+                break;
+            case STOW:
+                encoderVal = ArmConstants.kStow;
+                break;
+            default:
+                break;
+        }
+        pidController.setReference(encoderVal, ControlType.kPosition);
+        SmartDashboard.putNumber("Arm SetPoint", encoderVal);
+    }
 
     public void setArmPosition(double position) {
         pidController.setReference(position, ControlType.kPosition);
@@ -163,6 +190,7 @@ public class Arm extends ProfiledPIDSubsystem {
         double convertDeg = 11.375;
         double encoderPosition = degreePosition*convertDeg; //degree to encoder
         double currentPosition = armEncoder.getPosition(); 
+        
         SmartDashboard.putNumber("degreePosition", degreePosition);
         SmartDashboard.putNumber("encoder value", encoderPosition);
         SmartDashboard.putNumber("current arm position", currentPosition);

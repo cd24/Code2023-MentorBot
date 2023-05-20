@@ -2,27 +2,29 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.control.Controller;
+import frc.robot.control.schemes.competition.DriveTajectoryControl;
 
 /// Provides a top-level object to contain the controllers available to
 /// the system. In a typical match, this will entail one driver and one
 /// operator.
 public class Controllers implements Subsystem
 {
-    public Controller driverController;
-    public Controller operatorController;
+    public Controller[] controllers;
+    public DriveTajectoryControl trajectoryControl;
 
-    public Controllers(Controller driverController, Controller operatorController) 
+    public Controllers(DriveTajectoryControl trajectoryControl, Controller... controllers) 
     {
-        this.driverController = driverController;
-        this.operatorController = operatorController;
+        this.controllers = controllers;
+        this.trajectoryControl = trajectoryControl;
     }
 
     // MARK: - Builders
 
     public Controllers withBoundIO() 
     {
-        driverController.configure();
-        operatorController.configure();
+        for (Controller controller : controllers) {
+            controller.configure();
+        }
         return this;
     }
 
@@ -31,14 +33,14 @@ public class Controllers implements Subsystem
     @Override
     public void periodic() 
     {
-        // Driver actions come first...
-        driverController.periodic();
-        // Then we evaluate the operator controls
-        operatorController.periodic();
+        for (Controller controller : controllers) {
+            controller.periodic();
+        }
     }
 
     public void reportToSmartDashboard() {
-        driverController.reportToSmartDashboard();
-        operatorController.reportToSmartDashboard();
+        for (Controller controller : controllers) {
+            controller.reportToSmartDashboard();
+        }
     }
 }

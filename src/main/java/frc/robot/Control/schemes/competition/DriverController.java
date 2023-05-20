@@ -6,6 +6,8 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.robot.RobotContainer;
 import frc.robot.Constants.DriverConstants;
 import frc.robot.control.Controller;
+import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.Wrist;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /// This is a top-level behavior object responsible for binding the
@@ -13,19 +15,24 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 /// the Driver controller port.
 public class DriverController extends Controller {
 
+    private Wrist wrist;
+    private Drivetrain drivetrain;
+
     public DriverController(int controllerPort, RobotContainer robot) {
         super(controllerPort, robot);
+        this.wrist = robot.wrist;
+        this.drivetrain = robot.drivetrain;
     }
 
     @Override
     public void configure() {
-        this.buttons.A
-            .whileTrue(new RepeatCommand(new RunCommand(() -> this.robot.wrist.setWrist(0.1), this.robot.wrist)))
-            .onFalse(new RunCommand(() -> robot.wrist.stopWrist(), robot.wrist));
-        this.buttons.B 
-            .onTrue(new RunCommand(() -> robot.wrist.setWristPosition(0), robot.wrist));
-        this.buttons.X
-            .onTrue(new RunCommand(() -> robot.wrist.setWristPosition(2.8), robot.wrist));
+        buttons.A
+            .whileTrue(new RepeatCommand(new RunCommand(() -> wrist.setWrist(0.1), wrist)))
+            .onFalse(new RunCommand(() -> wrist.stopWrist(), wrist));
+        buttons.B 
+            .onTrue(new RunCommand(() -> wrist.setWristPosition(0), wrist));
+        buttons.X
+            .onTrue(new RunCommand(() -> wrist.setWristPosition(2.8), wrist));
     }
 
     @Override
@@ -37,8 +44,8 @@ public class DriverController extends Controller {
         double turn = deadband(controller.getRightX(), DriverConstants.kJoystickDeadband);
 
         if (throttle != 0) {
-            turn *= robot.drivetrain.getkInvert();
-            throttle *= robot.drivetrain.getkInvert();
+            turn *= drivetrain.getkInvert();
+            throttle *= drivetrain.getkInvert();
         }
 
         SmartDashboard.putNumber("turn input", turn);
@@ -64,6 +71,6 @@ public class DriverController extends Controller {
         }
         SmartDashboard.putNumber("left dt commanded", left);
         SmartDashboard.putNumber("right dt commanded", right);
-        robot.drivetrain.setOpenLoop(left, right); 
+        drivetrain.setOpenLoop(left, right); 
     }
 }

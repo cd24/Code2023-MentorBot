@@ -52,9 +52,6 @@ public class Drivetrain implements Subsystem {
 
         leftFollower.follow(leftLeader);
         rightFollower.follow(rightLeader);
-        //leftSlave.setNeutralMode(NeutralMode.Coast);
-        //rightSlave.setNeutralMode(NeutralMode.Coast);
-        // Inverting opposite sides of the drivetrain
         List.of(leftLeader , leftFollower).forEach(motor -> motor.setInverted(false));
         List.of(rightLeader , rightFollower).forEach(motor -> motor.setInverted(true));
 
@@ -63,9 +60,11 @@ public class Drivetrain implements Subsystem {
 
     @Override
     public void periodic() {
-        ODOMETRY.update(Rotation2d.fromDegrees(-navX.getAngle()),
-        getLeftEncMeters(),
-        getRightEncMeters());
+        ODOMETRY.update(
+            Rotation2d.fromDegrees(-navX.getAngle()),
+            getLeftEncMeters(),
+            getRightEncMeters()
+        );
         SmartDashboard.putNumber("Left Master output: ", getLeftEncVelocityMeters());
         //SmartDashboard.putNumber("Left Slave output: ", leftSlave.getMotorOutputPercent());
         SmartDashboard.putNumber("Right Master output: ", getRightEncVelocityMeters());

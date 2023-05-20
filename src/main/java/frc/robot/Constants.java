@@ -1,5 +1,9 @@
 package frc.robot;
 
+import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
+import edu.wpi.first.wpilibj.I2C.Port;
+import frc.robot.Units;
+
 /*  Robot Specs:
     4 TalonFX motors
     4-6 NEO motors
@@ -23,10 +27,10 @@ public class Constants {
     public static class DriverConstants {
         /* Common drive mode settings */
         public static final double kJoystickDeadband = 0.07; // How much of joystick is "dead" zone [0,1]
-        public static final double kDriveSens = 0.5; // Overall speed setting (turn down for demos) [0,1]
+        public static final double kDriveSens = 1.0; // Overall speed setting (turn down for demos) [0,1]
         public static final double kTurnInPlaceSens = 0.3; // Maximum turn-in-place rate (in percent of max) to allow
                                                             // robot to turn to [0,1]
-        public static final double kTurnSens = 1.0; // Maximum normal turning rate (in percent of max) to allow robot to
+        public static final double kTurnSens = .65; // Maximum normal turning rate (in percent of max) to allow robot to
                                                   // turn to [0,1]
     }
     
@@ -34,8 +38,8 @@ public class Constants {
         public static final int actuateMotorL = 4; //change to actuatemotor
         public static final int actuateMotorR = 0;
         /* PID Constants */
-        public static double kP = 0.1;
-        public static double kI = 0.01;
+        public static double kP = 0.3;
+        public static double kI = 0;
         public static double kD = 0;
 
         /* Feedforward Constants */
@@ -55,15 +59,21 @@ public class Constants {
         public static int gearRatio = 25;
 
         //arm encoder values
-        public static final double kCubeFloorIntakePosition = -5.285;
-        public static final double kCubeMidScorePosition = -21.143;
-        public static final double kCubeHighScorePosition = -27.286;
-        public static final double kConeFloorUprightIntakePosition = -2.071;
-        public static final double kConeFloorSidewaysIntakePosition = -1.786;
-        public static final double kConeMidUprightScorePosition = -25.00;
-        public static final double kConeMidSidewaysScorePosition = -17.286;
-        public static final double kConeHighUprightScorePosition = -27.143;
-        public static final double kStow = 0.0;
+        // arm mid cone = -28.714066
+        // wrist mid cone = 42.428131
+
+        // wrist high cone = 39.761509
+        // arm high cone = -32.071156
+        public static final double kStow = -6.857;
+        public static final double kCubeFloorIntakePosition = -5.285 + kStow;
+        public static final double kCubeMidScorePosition = -27.499;
+        public static final double kCubeHighScorePosition = -33.499;
+        public static final double kConeFloorUprightIntakePosition = -2.071 + kStow;
+        public static final double kConeFloorSidewaysIntakePosition = -1.786; // not used
+        public static final double kConeMidScorePosition = -28.714066;
+        public static final double kConeMidSidewaysScorePosition = -17.286; // not used
+        public static final double kConeHighScorePosition = -35;
+        
 
 
     }
@@ -79,20 +89,20 @@ public class Constants {
         public static final double kMaxAcceleration = 2*Math.PI;
 
         //wrist encoder values for intake
-        public static final double kCubeFloorIntakePosition = 39.166;
-        public static final double kCubeMidScorePosition = 51.262;
+        public static final double kCubeFloorIntakePosition = 39.166; //44.832851; 
+        public static final double kCubeMidScorePosition = 29.381;
         public static final double kCubeHighScorePosition = 37.833;
-        public static final double kConeFloorUprightIntakePosition = 23.524;
-        public static final double kConeFloorSidewaysIntakePosition = 35.428;
-        public static final double kConeMidUprightScorePosition = 57.763;
-        public static final double kConeMidSidewaysScorePosition = 20.167;
-        public static final double kConeHighUprightScorePosition = 47.166;
+        public static final double kConeFloorIntakePosition = 23.524;
+        public static final double kConeFloorSidewaysIntakePosition = 35.428; // not used
+        public static final double kConeMidScorePosition = 42.428131;
+        public static final double kConeMidSidewaysScorePosition = 20.167; // not used
+        public static final double kConeHighScorePosition = 38.761509;
         public static final double kStow = 0.0;
 
         /* PID Constants */
-        public static double kP = 6.6544;
-        public static double kI = 0;
-        public static double kD = 4.833;
+        public static double kP = 0.2;
+        public static double kI = 0.0;
+        public static double kD = 0.1;
 
         /* Feedforward Constants */
         public static double kS = 0.402;
@@ -111,9 +121,9 @@ public class Constants {
             rightFollowerCAN = 2; // TalonFX
         
         /* feedforward constants */
-        public static final double kS = 0.66589; // voltage required to overcome friction (V)
-        public static final double kV = 2.4372; // voltage over velocity (V/(meters/second))
-        public static final double kA = 0.28968; // voltage over acceleration (V(meters/second/second))
+        public static final double kV = 1.;// 2.4372; // voltage over velocity (V/(meters/second))
+        public static final double kS = 1.;  // 0.66589; // voltage required to overcome friction (V)
+        public static final double kA = 1.;  // 0.28968; // voltage over acceleration (V(meters/second/second))
 
         /* PID constants */
         public static final double kP = 3.2181;
